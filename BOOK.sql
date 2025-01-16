@@ -32,11 +32,53 @@ SELECT title, author FROM book
 WHERE title LIKE "_% %" AND (author LIKE "%_.C.%" OR LIKE "%C._.%")
 ORDER BY title
 
+--Кількість різних книг і кількість екземплярів книг кожного автора, що зберігаються на складі.
+SELECT author AS '', COUNT(DISTINCT(amount)) AS 'Pізнi_книги', SUM(amount) AS 'кількість'
+	FROM book
+GROUP BY author;
 
+--Прізвище та ініціали автора, мінімальна, максимальна та середня ціна книг кожного автора.
+SELECT author, MIN(price) AS 'мінімальна_ціна', MAX(price) AS 'максимальна_ціна', AVG(price) AS 'середня_ціна'
+	FROM book
+GROUP BY author;
 
+--Сумарна вартість книг S (ім'я стовпця Вартість), податок на додану вартість для отриманих сум (ім'я стовпця ПДВ), 
+  який включений у вартість та становить 18% (k=18), а також вартість книг (Вартість_без_ПДВ) без нього.
+SELECT author, SUM(price*amount) AS 'Вартість', ROUND(SUM(price*amount*0.18/(1+0.18)),2) AS 'ПДВ',
+	  ROUND(SUM(price*amount)/1.18),2) AS 'Вартість_без_ПДВ'
+	  FROM book
+GROUP BY author;
 
+--Вартість всіх екземплярів кожного автора без урахування книг «Ідіот» та «Біла гвардія» із сумарною вартістю книг (без урахування книг «Ідіот» та «Біла гвардія») понад 5000.
+SELECT author, SUM(price*amount) as 'Сумарна_вартість' FROM book
+WHERE author<>'Ідіот' OR author<>'Біла гвардія'
+GROUP BY author
+HAVING SUM(price*amount)>5000
+ORDER BY 3 DESC;
 
+--Aвтор, назва та ціна книг, ціни яких перевищують мінімальну ціну книги на складі не більше ніж на 150 у відсортованому за зростанням ціни.
+SELECT author, title, price FROM book
+WHERE ABS(price-(SELECT MIN(price) FROM book))<=150
+ORDER BY price ASC;
 
+--Автор, назва та ціна тих книг, кількість екземплярів яких у таблиці book не дублюється.
+SELECT author, title, amount FROM book
+WHERE amount in(SELECT amount FROM book GROUP BY amount HAVING COUNT(amount)=1);
+
+--Aвтор, назва та ціна тих книг, ціна яких менша за найбільшу з мінімальних цін, обчислених для кожного автора.
+SELECT author, title, amount FROM book
+WHERE price<ANY(SELECT MIN(price) FROM book GROUP BY author);
+
+--Кількість та яких екземплярів книг потрібно замовити постачальникам, щоб на складі стала однакова кількість екземплярів кожної книги, 
+  що дорівнює значенню найбільшої кількості екземплярів однієї книги на складі.
+SELECT author, title, ((SELECT MAX(amount) FROM book)-amount) AS 'Заказ' FROM book
+WHERE amount not in(SELECT MAX(amount) FROM book);
+
+--Відсоток вигоди
+SELECT *, ROUND((price*amount)/(SELECT SUM(price*amount) FROM book),2)*100 AS 'Відсоток_вигоди' 
+FROM book
+ORDER BY Відсоток_вигоди DESC;
+	  
 
 
 
