@@ -1,9 +1,57 @@
-/*
-Covid 19 Data Exploration
 
-Skills used: Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
+CREATE TABLE book(
+	book_id INT PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(50),
+	author VARCHAR(30),
+	amount DECIMAL(8,2),
+	price INT);
 
-*/
+INSERT INTO book (title, author, price, amount)
+VALUES ('Белая гвардия', 'Булгаков М.А.','540.50', '5'), ('Идиот', 'Достоевский Ф.М.','460.00', '10'), ('Братья Карамазовы', 'Достоевский Ф.М.','799.01', '2');
+SELECT * from book;
+
+--Наприкінці року ціну кожної книги на складі перераховують – знижують її на 30%.
+SELECT title, author, amount, ROUND((price*0.7),2) AS new_price FROM book
+
+--Під час аналізу продажів книг з'ясувалося, що найбільшою популярністю користуються книги Михайла Булгакова, на другому місці книги Сергія Єсеніна. 
+Тому вирішили підняти ціну книг Булгакова на 10%, а ціну книг Єсеніна - на 5%.
+SELECT author, title, 
+	ROUND(IF(author='Булгаков М.А.', price*1.1,IF(author='Есенин', price*1.05,price)),2) AS new_price
+
+--Автор, ціна та кількість усіх книг, ціна яких менша за 500 або більше 600, а вартість всіх примірників цих книг більша або дорівнює 5000.
+SELECT author, price, amount FROM book
+WHERE (price<500 OR price>600) and amount*price>=5000;
+
+--Назва та авторка книг, ціни яких належать інтервалу від 540.50 до 800 (включаючи межі), а кількість або 2, або 3, або 5, або 7.
+SELECT title, author, price FROM book
+WHERE (price between 540.5 and 800) and amount in(2,3,5,7);
+ORDER BY 2, 3
+
+--Назва та автора тих книг, назва яких складається із двох і більше слів, а ініціали автора містять літеру «С».
+SELECT title, author FROM book
+WHERE title LIKE "_% %" AND (author LIKE "%_.C.%" OR LIKE "%C._.%")
+ORDER BY title
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
 
 SELECT *
 FROM PortfolioProject..CovidDeaths
