@@ -79,6 +79,30 @@ SELECT *, ROUND((price*amount)/(SELECT SUM(price*amount) FROM book),2)*100 AS '�
 FROM book
 ORDER BY Відсоток_вигоди DESC;
 	  
+--Занести з таблиці supply в таблицю book лише книжки, авторів яких немає у book.
+INSERT INTO book(title, author, price, amount)
+SELECT title, author, price, amount FROM supply
+WHERE author not in(SELECT author FROM book);
+
+--Коригування значення для покупця в стовпці буде таким чином, щоб воно не перевищувало кількість екземплярів книг, зазначених у стовпці amount.
+  А ціну тих книг, що їх покупець не замовляв, знизив на 10%.
+UPDATE book
+SET buy=IF(BUY>amount, amount, buy),
+    price=IF(buy=0, price*0.9, price);
+
+--Для тих книг у таблиці book , які є в таблиці supply, не тільки збільшити їх кількість в таблиці book ( збільшити їх кількість на значення стовпця amount таблиці supply),
+  але й перерахувати їхню ціну.
+UPDATE book, supply
+SET book.amount=book.amount+supply.amount,
+    book.price=(book.price+supply.price)/2
+WHERE book.author+supply.author AND book.title+supply.title;
+	  
+--Видалити з таблиці supply книги тих авторів, загальна кількість екземплярів книг яких у таблиці book перевищує 10.
+DELETE FROM supply
+WHERE author in(SELECT author FROM book HAVING SUM(amount)>10);
+
+--
+    	
 
 
 
