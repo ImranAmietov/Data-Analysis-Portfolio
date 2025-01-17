@@ -143,6 +143,83 @@ UPDATE book, supply SET
 WHERE book.title = supply.title AND book.amount = -1;
 SELECT * FROM book;
 SELECT * from supply
+------------------------------------------------------------------------------------------------------ Complicating the table
+CREATE TABLE book(
+	book_id INT PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(50),
+	author_id is not NULL,
+	genre_id INT,
+	price DECIMAL(8.2),
+	amount INT,
+	FOREIGN KEY(author_id) REFERENCES author (author_id) ON DELETE CASCADE,
+	FOREIGN KEY(genre_id) REFERENCES genre (author_id) ON DELETE SET Null
+	);
+--Title, genre and price of books, the number of which is more than 8, sorted in descending order of price.
+SELECT title, name_genre, price
+FROM genre g INNER JOIN book b  ON g.genre_id=b.genre_id and book.amount>8
+ORDER BY price DESC;
+
+--All genres that are not represented in the books in stock.
+SELECT name_genre
+FROM genre g LEFT JOIN book b ON g.genre_id=b.genre_id
+WHERE b.amount is Null;
+
+--Each city will host an exhibition of books by each author during 2020. The date of the exhibition was chosen randomly.
+SELECT name_city, name_author, (DATE_ADD('2020-01-01', INTERVAL FLOOR(RAND()*365)DAY)) AS 'DATE'
+FROM city, author
+ORDER BY name_city DESC, DATE DESC;
+
+--The number of copies of books by each author from the author table. The authors whose number of books is less than 10 are displayed, sorted by increasing number.
+SELECT name_author, SUM(amount) as 'sum'
+FROM author LEFT JOIN book USING(author_id)
+GROUP BY name_author
+HAVING sum<10 OR sum is Null
+ORDER BY sum ASC;
+
+--All authors who write in only one genre are listed in alphabetical order.
+SELECT name_author
+FROM author JOIN book USING(author_id)
+            JOIN genre USING(genre_id)
+GROUP BY name_author
+HAVING COUNT(DISTINCT(name_genre))=1;
+
+--Information about books written in the most popular genres, sorted alphabetically by book title.
+SELECT title, name_author, name_genre, price, amount
+FROM author
+INNER JOIN book ON author.author_id=book.author_id
+INNER JOIN genre ON book.genre_id=genre.genre_id
+WHERE genre.genre_id IN(
+    SELECT query_1.genre_id
+    FROM (SELECT genre_id, MAX(amount) AS sum_amount
+          FROM book 
+          GROUP BY genre_id
+          ORDER BY  sum_amount DESC
+          ) AS query_1
+    INNER JOIN (
+    SELECT genre_id, MAX(amount) AS sum_amount
+    FROM book 
+    GROUP BY genre_id
+    ORDER BY  sum_amount DESC
+    LIMIT 2) AS query_2
+    ON query_1.sum_amount=query_2.sum_amount)
+ORDER BY title;
+                        OR
+SELECT title, name_author, name_genre, price, amount
+FROM author
+INNER JOIN book 
+ON author.author_id = book.author_id
+INNER JOIN genre 
+ON book.genre_id = genre.genre_id
+WHERE book.genre_id IN 
+    (SELECT genre_id
+     FROM book
+     GROUP BY genre_id
+     HAVING SUM(amount) >= ALL(SELECT SUM(amount) FROM book GROUP BY genre_id)
+     )
+ORDER BY title;
+
+
+
 
 
 
