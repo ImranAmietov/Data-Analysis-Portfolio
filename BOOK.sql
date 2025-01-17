@@ -14,7 +14,7 @@ SELECT * from book;
 SELECT title, author, amount, ROUND((price*0.7),2) AS new_price FROM book
 
 --Під час аналізу продажів книг з'ясувалося, що найбільшою популярністю користуються книги Михайла Булгакова, на другому місці книги Сергія Єсеніна. 
-Тому вирішили підняти ціну книг Булгакова на 10%, а ціну книг Єсеніна - на 5%.
+--Тому вирішили підняти ціну книг Булгакова на 10%, а ціну книг Єсеніна - на 5%.
 SELECT author, title, 
 	ROUND(IF(author='Булгаков М.А.', price*1.1,IF(author='Есенин', price*1.05,price)),2) AS new_price
 
@@ -43,7 +43,7 @@ SELECT author, MIN(price) AS 'мінімальна_ціна', MAX(price) AS 'м�
 GROUP BY author;
 
 --Сумарна вартість книг S (ім'я стовпця Вартість), податок на додану вартість для отриманих сум (ім'я стовпця ПДВ), 
-  який включений у вартість та становить 18% (k=18), а також вартість книг (Вартість_без_ПДВ) без нього.
+--який включений у вартість та становить 18% (k=18), а також вартість книг (Вартість_без_ПДВ) без нього.
 SELECT author, SUM(price*amount) AS 'Вартість', ROUND(SUM(price*amount*0.18/(1+0.18)),2) AS 'ПДВ',
 	  ROUND(SUM(price*amount)/1.18),2) AS 'Вартість_без_ПДВ'
 	  FROM book
@@ -70,7 +70,7 @@ SELECT author, title, amount FROM book
 WHERE price<ANY(SELECT MIN(price) FROM book GROUP BY author);
 
 --Кількість та яких екземплярів книг потрібно замовити постачальникам, щоб на складі стала однакова кількість екземплярів кожної книги, 
-  що дорівнює значенню найбільшої кількості екземплярів однієї книги на складі.
+--що дорівнює значенню найбільшої кількості екземплярів однієї книги на складі.
 SELECT author, title, ((SELECT MAX(amount) FROM book)-amount) AS 'Заказ' FROM book
 WHERE amount not in(SELECT MAX(amount) FROM book);
 
@@ -85,13 +85,13 @@ SELECT title, author, price, amount FROM supply
 WHERE author not in(SELECT author FROM book);
 
 --Коригування значення для покупця в стовпці буде таким чином, щоб воно не перевищувало кількість екземплярів книг, зазначених у стовпці amount.
-  А ціну тих книг, що їх покупець не замовляв, знизив на 10%.
+--А ціну тих книг, що їх покупець не замовляв, знизив на 10%.
 UPDATE book
 SET buy=IF(BUY>amount, amount, buy),
     price=IF(buy=0, price*0.9, price);
 
 --Для тих книг у таблиці book , які є в таблиці supply, не тільки збільшити їх кількість в таблиці book ( збільшити їх кількість на значення стовпця amount таблиці supply),
-  але й перерахувати їхню ціну.
+--але й перерахувати їхню ціну.
 UPDATE book, supply
 SET book.amount=book.amount+supply.amount,
     book.price=(book.price+supply.price)/2
@@ -101,169 +101,51 @@ WHERE book.author+supply.author AND book.title+supply.title;
 DELETE FROM supply
 WHERE author in(SELECT author FROM book HAVING SUM(amount)>10);
 
---
+--Таблицю замовлення (ordering), ключає авторів та назви книг, кількість екземплярів яких у таблиці book менша за середню кількість екземплярів книг у таблиці book.
+CREATE TABLE ordering AS
+SELECT author, title, (SELECT ROUND(AVG(amount)) FROM book) as amount 
+	FROM book
+WHERE amount<(SELECT ROUND(AVG(amount)) FROM book);
+
+--Знижка 5% на найбільшу кількість екземплярів книг
+UPDATE boook AS b1
+SET b1.price=b1.price*0.95
+WHERE b1.amount=(SELECT MAX(b2.amount) FROM (SELECT * FROM book) AS b2); 
     	
+--Всі книги зі складу передали в магазин 
+--(Заніс із таблиці supply в таблицю book тільки ті книги, назви яких відсутні в таблиці book, при цьому кількість цих книг у таблиці supply обнулив).
+-- Три варіанти рішення
+1. INSERT INTO book (title, author, price)
+SELECT title, author, price from supply 
+where (title, author) not in (SELECT title, author from  book);
+UPDATE book, supply SET
+    book.amount = supply.amount,
+    supply.amount = 0
+WHERE book.title = supply.title AND book.amount IS NULL;
+SELECT * FROM book;
+SELECT * FROM supply;
+
+2. CREATE TABLE delivery AS
+SELECT title, author, price, amount FROM supply WHERE title NOT IN (SELECT title FROM book);
+UPDATE supply SET supply.amount=IF(supply.title=ANY(SELECT title FROM book), supply.amount, 0);
+INSERT INTO book (title, author, price, amount) 
+       SELECT * FROM delivery; 
+SELECT * FROM book;
+SELECT * FROM supply;
+
+3. INSERT INTO book (title, author, price, amount)
+SELECT title, author, price, -1 AS amount from supply
+WHERE title not in(select title
+                   from book); 
+UPDATE book, supply SET
+    book.amount = supply.amount,
+    supply.amount = 0
+WHERE book.title = supply.title AND book.amount = -1;
+SELECT * FROM book;
+SELECT * from supply
 
 
 
 
-	
-	
-
-
-
-
-
-
-
-
-
-
-SELECT *
-FROM PortfolioProject..CovidDeaths
-WHERE continent IS NOT NULL 
-ORDER BY 3,4
-
-
--- Selecting Data that we are going to start with
-
-SELECT location, date, total_cases, new_cases, total_deaths, population
-FROM PortfolioProject..CovidDeaths
-WHERE continent is NOT NULL
-ORDER BY 1,2
-
-
--- Looking at Total Cases vs Total Deaths
--- Shows the likelihood of dying if you contract covid in my country
-
-SELECT location, date, total_cases, total_deaths, ROUND((total_deaths/total_cases)*100, 2) AS DeathPercentage
-FROM PortfolioProject..CovidDeaths
-WHERE location='Jamaica'
-ORDER BY 1,2
-
-
--- Total Cases vs Population
--- Shows what percentage of the population got Covid
-
-SELECT location, date, total_cases, population, ROUND((total_cases/population)*100, 5) AS CasesByPopulation
-FROM PortfolioProject..CovidDeaths
---WHERE location='Jamaica'
-ORDER BY 1,2
-
-
--- Countries with Highest Infection Rate compared to Population
-
-SELECT location, population, MAX(total_cases) AS HighestInfectionCount, ROUND(MAX((total_cases/population))*100,2) AS PercentPopulationInfected
-FROM PortfolioProject..CovidDeaths
---WHERE location='Jamaica'
-GROUP BY location, population
-ORDER BY PercentPopulationInfected DESC
-
-
--- Countries with Highest Death Count per Population
-
-SELECT Location, MAX(CAST(total_deaths AS int)) AS TotalDeathCount
-FROM PortfolioProject..CovidDeaths
-WHERE continent IS NOT NULL
-GROUP BY location
-ORDER BY TotalDeathCount DESC
-
-
--- Breaking things down by Continent
-
--- Continents with Highest Death Count per Population
-
-SELECT continent, MAX(CAST(total_deaths AS int)) AS TotalDeathCount
-FROM PortfolioProject..CovidDeaths
-WHERE continent IS NOT NULL
-GROUP BY continent
-ORDER BY TotalDeathCount DESC
-
-
-
--- Global Numbers by date
-
-SELECT date, SUM(new_cases) AS TotalCases, SUM(cast(new_deaths AS int)) AS TotalDeaths, ROUND((SUM(cast(new_deaths AS int))/SUM(new_cases))*100, 2) AS DeathPercentage
-FROM PortfolioProject..CovidDeaths
-WHERE continent is NOT NULL
-GROUP BY date
-ORDER BY 1,2
-
-
--- Global Numbers overall
-
-SELECT SUM(new_cases) AS TotalCases, SUM(cast(new_deaths AS int)) AS TotalDeaths, ROUND((SUM(cast(new_deaths AS int))/SUM(new_cases))*100, 2) AS DeathPercentage
-FROM PortfolioProject..CovidDeaths
-WHERE continent is NOT NULL
---GROUP BY date
-ORDER BY 1,2
-
-
-
--- Total Population vs Vaccinations
--- Percentage of Population that has received at least one Covid Vaccine
-
-SELECT dea.continent, dea.location, dea.date, dea.population, vax.new_vaccinations
-, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
-FROM PortfolioProject..CovidDeaths dea
-JOIN PortfolioProject..CovidVaccinations vax
-	ON dea.location = vax.location
-	AND dea.date = vax.date
-WHERE dea.continent IS NOT NULL
-ORDER BY 2,3
-
-
-
--- Using CTE to perform calculation on partition by previous query
-
-WITH PopulationvsVaccinations (Continent, Location, date, Population, New_Vaccinations, RollingPeopleVaccinated)
-AS
-(
-SELECT dea.continent, dea.location, dea.date, dea.population, vax.new_vaccinations, SUM(CONVERT(int,vax.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) AS RollingPeopleVaccinated
-FROM PortfolioProject..CovidDeaths dea
-JOIN PortfolioProject..CovidVax vax
-	ON dea.location = vax.location
-	and dea.date = vax.date
-WHERE dea.continent is NOT NULL 
-)
-SELECT *, ROUND((RollingPeopleVaccinated/Population)*100,2) AS RollingPercent
-FROM PopulationvsVaccinations
-
-
-
---Using TEMP TABLE to perform calculation on Partition By in previous query 
-
-DROP Table if exists #PercentPopulationVaccinated
-Create Table #PercentPopulationVaccinated
-(
-Continent nvarchar(255),
-Location nvarchar(255), 
-date datetime, 
-Population numeric, 
-New_Vaccinations numeric, 
-RollingPeopleVaccinated numeric
-)
-
-INSERT INTO #PercentPopulationVaccinated
-SELECT dea.continent, dea.location, dea.date, dea.population, vax.new_vaccinations, SUM(CONVERT(int,vax.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) AS RollingPeopleVaccinated
-FROM PortfolioProject..CovidDeaths dea
-JOIN PortfolioProject..CovidVax vax
-	ON dea.location = vax.location
-	and dea.date = vax.date
-WHERE dea.continent is NOT NULL 
-
-SELECT *, ROUND((RollingPeopleVaccinated/Population)*100,2) AS RollingPercent
-FROM #PercentPopulationVaccinated
-
-
--- Creating View to store data for later visualisations
-
-CREATE View PercentPopulationVaccinated as
-SELECT dea.continent, dea.location, dea.date, dea.population, vax.new_vaccinations, SUM(CONVERT(int,vax.new_vaccinations)) OVER (Partition by dea.location ORDER BY dea.location, dea.date) AS RollingPeopleVaccinated
-FROM PortfolioProject..CovidDeaths dea
-JOIN PortfolioProject..CovidVax vax
-	ON dea.location = vax.location
-	and dea.date = vax.date
-WHERE dea.continent is NOT NULL 
 
 
