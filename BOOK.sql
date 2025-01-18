@@ -218,6 +218,117 @@ WHERE book.genre_id IN
      )
 ORDER BY title;
 
+--Books that are already in stock (in the book table), but at a different price than in the supply, 
+--it is necessary to increase the quantity in the book table by the value specified in the supply, and recalculate the price. And in the supply table, reset the quantity of these books.
+UPDATE book b
+INNER JOIN author a USING(author_id)
+INNER JOIN genre g ON a.name_author=s.author AND b.title=s.title AND b.price<>s.price
+SET b.price=IF(b.price=s.price, b.price, (b.price*b.amount+s.price*s.amount)/(b.amount+s.amount)),
+    b.amount=b.amount+s.amount, s.amount=0;
+
+--For the book "Стихотворения и поэмы" by Lermontov, choose the genre "Poetry", and for the book "Остров сокровищ" by Stevenson - "Adventures".
+UPDATE book b
+INNER JOIN author a USING (author_id)
+SET b.genre_id=(
+	SELECT genre_id
+	FROM genre
+	WHERE name_genre=CASE
+	      WHEN b.title='Стихотворения и поэмы' AND a.name_author LIKE 'Lermontov%' THEN 'Poetry'
+	      WHEN b.title='Остров сокровищ' AND a.name_author LIKE 'Stevenson%' THEN 'Adventures'
+	      END)
+WHERE a.name_author LIKE 'Lermontov%' OR a.name_author LIKE 'Stevenson%';
+
+--Delete all authors and all their books, the total number of books of which is less than 20.
+DELETE FROM book
+WHERE author_id in (SELECT author_id
+	            FROM book
+	            GROUP BY author_id
+	            HAVING SUM(amount)<20);
+
+--Delete all authors who write in the genre "Poetry". Delete all books by these authors from the book table.
+DELETE FROM author a
+INNER JOIN book b USING(author_id)
+INNER JOIN genre g USING(genre_id)
+WHERE name_genre LIKE 'Poetry';
+
+--How many times each book was ordered, the author of the book is displayed.
+SELECT name_author, title, COUNT(bb.amount) AS amount
+FROM author a
+INNER JOIN book b USING(author_id)
+LEFT JOIN buy_book bb USING(book_id)
+GROUP BY name_author, title
+ORDER  BY name_author, title;
+
+--Numbers of all paid orders and the dates when they were paid.
+SELECT buy_id, date_step_end 
+FROM step s JOIN buy_step bb USING(step_id)
+WHERE date_step_end is not Null 
+	AND bb.step_id=1;
+
+--Order numbers (buy_id) and names of the stages they are currently at. If the order has been delivered, no information about it is displayed.
+SELECT DISTINCT buy_id, name_step
+FROM buy_step bs INNER JOIN s ON bs.step_id=s.step_id
+WHERE date_step_end is Null AND date_step_beg is not Null
+ORDER BY buy_id ASC;
+
+--In the city table, for each city, the number of days in which the order can be delivered to this city is indicated (only the "Transportation" stage is considered). For those orders that have passed the transportation stage, the number of days in which the order is actually delivered to the city is displayed. 
+--Also, if the order is delivered late, the number of days of delay is indicated, otherwise 0 is displayed.
+SELECT bs.buy_id, DATEDIFF(date_step_end, date_step_beg) AS 'days',
+	IF(DATEDIFF(date_step_end, date_step_beg)>date_delivery, DATEDIFF(date_step_end, date_step_beg)-date_delivery, 0) AS 'lateness'
+FROM city c
+INNER JOIN client cl USING(city_id)
+INNER JOIN buy b USING(client_id)
+INNER JOIN buy_step bs USING(buy_id)
+INNER JOIN step s USING(step_id)
+WHERE name_step in('Transportation') AND date_step_end is not Null
+ORDER BY buy_id;
+
+--The genre in which the most copies of books were ordered, indicate this quantity
+SELECT name_genre, SUM(bb.amount) AS 'amount'
+FROM genre g INNER JOIN book b USING(genre_id)
+             INNER JOIN buy_book bb USING(book_id)
+GROUP BY name_genre
+HAVING SUM(bb.amount)=(SELECT MAX(sum_amount) FROM (SELECT SUM(buy_book.amount) as sum_amount
+	                                            FROM buy_book
+	                                            INNER JOIN book USING(book_id)
+                                                    INNER JOIN genre USING(genre_id)
+	                                            GROUP BY genre_id) as query);
+
+--Comparison of monthly book sales revenue for the current and previous years.
+SELECT YEAR(date_payment) AS 'YEAR', MONTHNAME(date_payment) AS 'MONTH', SUM(amount*price) AS 'SUM' 
+FROM buy_arhive
+GROUP BY 1, 2
+UNION
+SELECT YEAR(date_payment) AS 'YEAR', MONTHNAME(date_payment) AS 'MONTH', SUM(bb.amount*b.price) AS 'SUM'
+FROM buy_step INNER JOIN step s USING(step_id)
+              INNER JOIN buy_book bb USING(buy_id)
+              INNER JOIN book USING(book_id)
+WHERE name_step in ('payment') AND date_step_end is not Null
+GROUP BY 1, 2
+ORDER BY 3 ASC;
+   
+--For each book, information is displayed on the number of copies sold and their cost for 2020 and 2019. For 2020, copies that have already been paid for were considered sold.
+SELECT title, SUM(amount) AS 'Amount', SUM(sum) AS 'Sum'
+FROM (SELECT b.title, SUM(ba.amount) AS 'amount', SUM(ba.price*ba.amount) AS 'sum'
+	FROM buy_arhive ba INNER JOIN book USING(book_id)
+      GROUP BY title
+UNION ALL
+      SELECT b.title, SUM(bb.amount) AS 'amount', SUM(b.price*bb.amount) AS 'sum'
+      FROM step p
+        INNER JOIN buy_step bs USING(step_id)
+        INNER JOIN buy_book bb USING(buy_id)
+        INNER JOIN book     b  USING(book_id)
+      WHERE name_step in ('payment') AND bs.date_step_end is not Null
+      GROUP BY b.title) AS query_1
+GROUP BY title
+ORDER BY Sum DESC;
+
+--Deleting from the database information about orders for which payment was not completed within 24 hours from the date of placing the order.
+DELETE FROM buy 
+   INNER JOIN buy_step USING(buy_id)
+   INNER JOIN step USING(step_id)
+WHERE (DATEDIFF(date_step_end, date_step_beg)>1 OR date_step_end is Null) 
+      AND step_id in(SELECT step_id FROM step WHERE name_step='payment');
 
 
 
