@@ -7,6 +7,7 @@
     - [Employee business trips] (https://github.com/ImranAmietov/PortfolioProjects3/blob/14ff9eb513c91cbbb2a47744f1b9debbc790c793/Trip%2Cfine.sql)
   - Excel / Google Sheets
     - [Sale of goods] (https://docs.google.com/spreadsheets/d/1hz66ajDox1485CGA7e6A88NphCF3OGtPNjeQZvxntPg/edit?usp=sharing)
+    - [Correlation Coefficient] (https://docs.google.com/spreadsheets/d/1aOQ4gXPTZ8boEPKk4Q4qfyKqjIbCk_xaL3a2phHnHFY/edit?usp=sharing)
   - Tableau---> [go to Tableau..] (https://public.tableau.com/app/profile/imran.amietov/vizzes)
   - Power BI
 
