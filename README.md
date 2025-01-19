@@ -8,7 +8,7 @@ My higher medical education gave me a deep understanding of the systemic approac
 
 In my free time, I enjoy exploring new data analysis tools and techniques, and I am always looking for opportunities to expand my knowledge and skills. Whether working on a team or independently, I am driven by the thrill of discovering new insights and the satisfaction of using data to solve complex problems.
 
-This is a repository to showcase skills, share projects and track my progress in Data Analytics / Data Science related topics.
+This is a repository to showcase skills, share projects and track my progress in Data Analytics related topics.
 
 ## Table of Contents
   - SQL
