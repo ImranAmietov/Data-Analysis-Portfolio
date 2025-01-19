@@ -6,6 +6,10 @@ Over the past few years, I have been actively learning about data analytics thro
 
 My higher medical education gave me a deep understanding of the systemic approach to problem solving, information analysis and working with large volumes of data, which became an excellent foundation for my development in a new field.
 
+In my free time, I enjoy exploring new data analysis tools and techniques, and I am always looking for opportunities to expand my knowledge and skills. Whether working on a team or independently, I am driven by the thrill of discovering new insights and the satisfaction of using data to solve complex problems.
+
+This is a repository to showcase skills, share projects and track my progress in Data Analytics / Data Science related topics.
+
 ## Table of Contents
   - SQL
     - [bookstore] (https://github.com/ImranAmietov/PortfolioProjects1/blob/323bc1fc2724e54b59072e9a1811ce61d3d5e624/BOOK.sql)
