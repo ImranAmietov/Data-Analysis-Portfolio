@@ -28,12 +28,12 @@ Petro Mohyla Black Sea National University
 
 ## Certificates
 The best way to showcase skills is by doing and sharing your job done but sometimes certificates appear to be as an indirect result. Here's a list of the ones I have (in reverse-chronological order, with the date of completion in brackets):
-- [Google Data Analytics Professional Certificate]
+- [Google Data Analytics Professional Certificate] (https://drive.google.com/file/d/1rraZNL4Bp3VaGDN6WG4OFsYbWpVPypbc/view?usp=sharing)
 - [SQL] (https://drive.google.com/file/d/1MJleK_uOhN8gZOtGUL6s6XlfPEzdVp0Z/view?usp=sharing)
 - [Tableau]
 
 ## Contacts
-- LinkedIn: 
+- LinkedIn: (https://www.linkedin.com/in/arhitektor-imran-770040346/)
 - Email: imranametov11@gmail.com
 
 
