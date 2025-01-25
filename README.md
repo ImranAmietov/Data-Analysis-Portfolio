@@ -15,6 +15,7 @@ This is a repository to showcase skills, share projects and track my progress in
     - [bookstore] (https://github.com/ImranAmietov/PortfolioProjects1/blob/323bc1fc2724e54b59072e9a1811ce61d3d5e624/BOOK.sql)
     - [Admissions Committee] (https://github.com/ImranAmietov/PortfolioProjects2/blob/71d42b87121302fc1251865e54c7984bbaf38713/Students.sql)
     - [Employee business trips] (https://github.com/ImranAmietov/PortfolioProjects3/blob/14ff9eb513c91cbbb2a47744f1b9debbc790c793/Trip%2Cfine.sql)
+    - [Shop orders] (https://github.com/ImranAmietov/PortfolioProjects4/blob/bf7363e6df37eab8e45e56bebbf6ee306be99fe8/orders.sql)
   - Excel / Google Sheets
     - [Sale of goods] (https://docs.google.com/spreadsheets/d/1hz66ajDox1485CGA7e6A88NphCF3OGtPNjeQZvxntPg/edit?usp=sharing)
     - [Correlation Coefficient] (https://docs.google.com/spreadsheets/d/1aOQ4gXPTZ8boEPKk4Q4qfyKqjIbCk_xaL3a2phHnHFY/edit?usp=sharing)
