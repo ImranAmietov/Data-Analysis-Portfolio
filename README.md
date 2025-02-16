@@ -11,7 +11,7 @@ In my free time, I enjoy exploring new data analysis tools and techniques, and I
 This is a repository to showcase skills, share projects and track my progress in Data Analytics related topics.
 
 ## Table of Contents
-  - [Pet-project](https://github.com/ImranAmietov/Pet-project1/blob/faeefe314fd09a9704e9e33ae873497685d9c20a/README.md)
+  - [Pet-project-Розбір фінансування медичних установ у 2023 році](https://github.com/ImranAmietov/Pet-project1/blob/faeefe314fd09a9704e9e33ae873497685d9c20a/README.md)
   - SQL
     - [bookstore] (https://github.com/ImranAmietov/PortfolioProjects1/blob/323bc1fc2724e54b59072e9a1811ce61d3d5e624/BOOK.sql)
     - [Admissions Committee] (https://github.com/ImranAmietov/PortfolioProjects2/blob/71d42b87121302fc1251865e54c7984bbaf38713/Students.sql)
